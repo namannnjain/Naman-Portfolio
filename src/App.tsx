@@ -636,7 +636,7 @@ export default function App() {
       liveUrl: "#",
       repoUrl: "#",
       isVideo: true,
-      videoSrc: "https://lh3.googleusercontent.com/d/11_gEO5jIFif-Hz_fVAaS6nX-2RXAuVPM",
+      videoSrc: "https://dl.streamable.com/video/mp4/44xp50.mp4",
       stackStyle: { transform: cardPhase === 'hidden' ? 'translateX(-110vw) rotate(-20deg)' : cardPhase === 'stacked' ? 'translateX(0vw) translateY(15px) rotate(0deg) scale(0.98)' : 'translateX(0) translateY(0) rotate(0deg) scale(1)', opacity: cardPhase === 'hidden' ? 0 : 1, zIndex: 2 }
     },
     {
@@ -712,7 +712,7 @@ export default function App() {
             <div className="w-full h-[58vh] max-h-[58vh] rounded-2xl overflow-hidden bg-black/35 border border-white/25 mb-3 flex items-center justify-center shadow-inner">
               <video
                 ref={showreelVideoRef}
-                src="https://lh3.googleusercontent.com/d/11_gEO5jIFif-Hz_fVAaS6nX-2RXAuVPM"
+                src="https://dl.streamable.com/video/mp4/44xp50.mp4"
                 className="w-full h-full object-cover"
                 playsInline
                 controls
