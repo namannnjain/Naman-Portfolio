@@ -499,25 +499,27 @@ export default function App() {
     const handleScroll = () => {
       if (activeNav === 'Journey' && timelineContainerRef.current) {
         const container = timelineContainerRef.current;
-        const rect = container.getBoundingClientRect();
-        const containerHeight = container.offsetHeight - 100;
-        const windowHeight = window.innerHeight;
-        const scrollableDistance = containerHeight - windowHeight + 200;
-        const currentScroll = windowHeight - rect.top - 150;
+        const scrollTop = container.scrollTop;
+        const scrollHeight = container.scrollHeight - container.clientHeight;
 
-        if (scrollableDistance > 0) {
-          let progress = currentScroll / scrollableDistance;
+        if (scrollHeight > 0) {
+          let progress = scrollTop / scrollHeight;
           progress = Math.max(0, Math.min(1, progress));
-          setWalkerTranslateY(progress * containerHeight);
+          const maxTravel = container.clientHeight - 120;
+          setWalkerTranslateY(progress * maxTravel);
         }
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
+    const containerEl = timelineContainerRef.current;
+    if (containerEl) {
+      containerEl.addEventListener('scroll', handleScroll, { passive: true });
+    }
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      if (containerEl) {
+        containerEl.removeEventListener('scroll', handleScroll);
+      }
     };
   }, [activeNav]);
 
@@ -922,7 +924,7 @@ export default function App() {
           </div>
         </main>
       ) : activeNav === 'Journey' ? (
-        <main className="relative z-[1] w-full h-screen pt-28 pb-16 px-5 sm:px-8 md:px-16 max-w-4xl mx-auto cinematic-text overflow-y-auto no-scrollbar">
+        <main ref={timelineContainerRef} className="relative z-[1] w-full h-screen pt-28 pb-16 px-5 sm:px-8 md:px-16 max-w-4xl mx-auto cinematic-text overflow-y-auto no-scrollbar">
           <div className="mb-8">
             <h1 className="text-[36px] sm:text-[48px] font-medium text-white tracking-tight mb-2" style={{ fontFamily: 'var(--font-heading)' }}>
               My Learning Journey
@@ -932,7 +934,7 @@ export default function App() {
             </p>
           </div>
 
-          <div ref={timelineContainerRef} className="border-l-2 border-white/30 pl-8 sm:pl-12 ml-4 space-y-10 relative min-h-[75vh]">
+          <div className="border-l-2 border-white/30 pl-8 sm:pl-12 ml-4 space-y-10 relative min-h-[75vh]">
             
             <div 
               className="absolute -left-[70px] w-32 h-32 pointer-events-none z-20 neon-walker"
