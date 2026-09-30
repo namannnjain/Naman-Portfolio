@@ -92,26 +92,26 @@ const STYLES = `
 
   @keyframes chaoticFloat1 {
     0% { transform: translate(0px, 0px) rotate(-3deg); }
-    33% { transform: translate(-25px, -35px) rotate(3deg); }
-    66% { transform: translate(20px, -20px) rotate(-1deg); }
+    33% { transform: translate(-20px, -25px) rotate(3deg); }
+    66% { transform: translate(15px, -15px) rotate(-1deg); }
     100% { transform: translate(0px, 0px) rotate(-3deg); }
   }
   @keyframes chaoticFloat2 {
     0% { transform: translate(0px, 0px) rotate(2deg); }
-    33% { transform: translate(30px, -25px) rotate(-3deg); }
-    66% { transform: translate(-20px, -40px) rotate(3deg); }
+    33% { transform: translate(20px, -20px) rotate(-3deg); }
+    66% { transform: translate(-15px, -30px) rotate(3deg); }
     100% { transform: translate(0px, 0px) rotate(2deg); }
   }
   @keyframes chaoticFloat3 {
     0% { transform: translate(0px, 0px) rotate(-2deg); }
-    33% { transform: translate(-30px, -25px) rotate(4deg); }
-    66% { transform: translate(20px, -35px) rotate(-2deg); }
+    33% { transform: translate(-20px, -20px) rotate(4deg); }
+    66% { transform: translate(15px, -25px) rotate(-2deg); }
     100% { transform: translate(0px, 0px) rotate(-2deg); }
   }
   @keyframes chaoticFloat4 {
     0% { transform: translate(0px, 0px) rotate(3deg); }
-    33% { transform: translate(25px, -40px) rotate(-2deg); }
-    66% { transform: translate(-25px, -25px) rotate(2deg); }
+    33% { transform: translate(20px, -30px) rotate(-2deg); }
+    66% { transform: translate(-20px, -20px) rotate(2deg); }
     100% { transform: translate(0px, 0px) rotate(3deg); }
   }
 
@@ -1176,17 +1176,17 @@ export default function App() {
         </main>
       ) : activeNav === 'Contact' ? (
         <main className="relative z-[1] w-full h-screen pt-28 pb-10 px-5 sm:px-8 max-w-6xl mx-auto flex flex-col items-center justify-start overflow-hidden cinematic-text">
-          <div className="text-center mb-4 mt-2">
-            <h1 className="text-[34px] sm:text-[444px] font-medium text-white tracking-tight mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
+          <div className="text-center mb-4 mt-6 z-10">
+            <h1 className="text-[32px] sm:text-[42px] font-medium text-white tracking-tight mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
               Get In Touch
             </h1>
-            <p className="text-white/80 text-[15px] sm:text-[17px]">
+            <p className="text-white/80 text-[14px] sm:text-[16px]">
               Catch the flying hot air balloons and click their icons to connect!
             </p>
           </div>
 
-          {/* Floating Balloons Container shifted even higher to top */}
-          <div className="relative w-full h-[58vh] flex justify-around items-start px-4">
+          {/* Floating Balloons Container properly sized */}
+          <div className="relative w-full h-[52vh] flex justify-around items-start px-4 z-10">
             {[
               { id: 1, name: 'Gmail', icon: '/gmail.png', link: 'mailto:naman.edu.in@gmail.com', floatClass: 'float-1' },
               { id: 2, name: 'LinkedIn', icon: '/linkedin.png', link: 'https://www.linkedin.com/in/naman-jain-905b00428/', floatClass: 'float-2' },
@@ -1200,8 +1200,8 @@ export default function App() {
                   id={`balloon-${idx}`}
                   className={`flex flex-col items-center absolute transition-transform duration-300 ease-out ${item.floatClass}`}
                   style={{
-                    left: `${10 + idx * 23}%`,
-                    top: `${4 + (idx % 2) * 8}%`,
+                    left: `${12 + idx * 21}%`,
+                    top: `${6 + (idx % 2) * 6}%`,
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
                   }}
                 >
@@ -1209,18 +1209,18 @@ export default function App() {
                   <img 
                     src="/hotbaloon.png" 
                     alt="Hot Air Balloon" 
-                    className="w-24 sm:w-32 md:w-36 object-contain filter drop-shadow-lg pointer-events-none" 
+                    className="w-20 sm:w-28 md:w-32 object-contain filter drop-shadow-lg pointer-events-none" 
                   />
                   
                   {/* Rope hanging down */}
-                  <div className="w-[2px] h-12 bg-white/70 -mt-2" />
+                  <div className="w-[2px] h-10 bg-white/70 -mt-1" />
 
                   {/* Clickable App Icon */}
                   <a
                     href={item.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-2xl border border-white/40 shadow-xl flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 transition-transform hover:scale-110 cursor-pointer group"
+                    className="p-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-2xl border border-white/40 shadow-xl flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 transition-transform hover:scale-110 cursor-pointer group"
                   >
                     <img 
                       src={item.icon} 
