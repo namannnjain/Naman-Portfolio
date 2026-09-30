@@ -636,7 +636,7 @@ export default function App() {
       liveUrl: "#",
       repoUrl: "#",
       isVideo: true,
-      videoSrc: "https://dl.streamable.com/video/mp4/44xp50.mp4",
+      videoSrc: "/edit.mp4",
       stackStyle: { transform: cardPhase === 'hidden' ? 'translateX(-110vw) rotate(-20deg)' : cardPhase === 'stacked' ? 'translateX(0vw) translateY(15px) rotate(0deg) scale(0.98)' : 'translateX(0) translateY(0) rotate(0deg) scale(1)', opacity: cardPhase === 'hidden' ? 0 : 1, zIndex: 2 }
     },
     {
@@ -712,7 +712,7 @@ export default function App() {
             <div className="w-full h-[58vh] max-h-[58vh] rounded-2xl overflow-hidden bg-black/35 border border-white/25 mb-3 flex items-center justify-center shadow-inner">
               <video
                 ref={showreelVideoRef}
-                src="https://dl.streamable.com/video/mp4/44xp50.mp4"
+                src="/edit.mp4"
                 className="w-full h-full object-cover"
                 playsInline
                 controls
@@ -1177,7 +1177,7 @@ export default function App() {
       ) : activeNav === 'Contact' ? (
         <main className="relative z-[1] w-full h-screen pt-28 pb-10 px-5 sm:px-8 max-w-6xl mx-auto flex flex-col items-center justify-start overflow-hidden cinematic-text">
           <div className="text-center mb-4 mt-2">
-            <h1 className="text-[34px] sm:text-[44px] font-medium text-white tracking-tight mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
+            <h1 className="text-[34px] sm:text-[444px] font-medium text-white tracking-tight mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
               Get In Touch
             </h1>
             <p className="text-white/80 text-[15px] sm:text-[17px]">
