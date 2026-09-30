@@ -813,7 +813,7 @@ export default function App() {
           {navItems.map((item) => (
             <button
               key={item}
-              ref={(el) => (navItemRefs.current[item] = el)}
+              ref={(el) => { navItemRefs.current[item] = el; }}
               onClick={() => setActiveNav(item)}
               onMouseEnter={() => setHoveredNav(item)}
               className={`pb-1 cursor-pointer focus:outline-none transition-opacity ${
