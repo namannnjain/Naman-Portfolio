@@ -495,7 +495,7 @@ export default function App() {
   const typewriterText = "Glad you stopped in. Good taste tends to find us. Now, what are we building?";
   const { displayed, done } = useTypewriter(typewriterText, 38, 1400);
 
-  // Dedicated Mobile Auto Play Ping-Pong Loop for Character Video
+  // Robust Mobile Auto-Play Ping-Pong Loop for Character Video
   const mobileDirRef = useRef<number>(1);
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
@@ -504,16 +504,21 @@ export default function App() {
     let animationId: number;
     const updateMobileVideo = () => {
       const vid = videoRef.current;
-      if (vid && !isNaN(vid.duration) && vid.duration > 0) {
-        let nextTime = vid.currentTime + mobileDirRef.current * 0.035;
-        if (nextTime >= vid.duration) {
-          nextTime = vid.duration;
-          mobileDirRef.current = -1;
-        } else if (nextTime <= 0) {
-          nextTime = 0;
-          mobileDirRef.current = 1;
+      if (vid) {
+        if (vid.paused) {
+          vid.play().catch(() => {});
         }
-        vid.currentTime = nextTime;
+        if (!isNaN(vid.duration) && vid.duration > 0) {
+          let nextTime = vid.currentTime + mobileDirRef.current * 0.035;
+          if (nextTime >= vid.duration) {
+            nextTime = vid.duration;
+            mobileDirRef.current = -1;
+          } else if (nextTime <= 0) {
+            nextTime = 0;
+            mobileDirRef.current = 1;
+          }
+          vid.currentTime = nextTime;
+        }
       }
       animationId = requestAnimationFrame(updateMobileVideo);
     };
@@ -843,18 +848,18 @@ export default function App() {
       <video
         ref={videoRef}
         src="/me.mp4"
+        autoPlay
+        muted
+        playsInline
         className="fixed z-0 pointer-events-none object-cover video-blend"
         style={{
           width: window.innerWidth < 768 ? '100vw' : '75vw',
-          height: window.innerWidth < 768 ? '54vh' : '85vh',
+          height: window.innerWidth < 768 ? '52vh' : '85vh',
           right: window.innerWidth < 768 ? '0' : '-5vw',
           top: window.innerWidth < 768 ? '7vh' : '10vh',
           objectPosition: window.innerWidth < 768 ? 'center 12%' : '70% center',
           opacity: (activeNav === 'Journey' || activeNav === 'Work' || activeNav === 'Contact') ? 0.15 : 1,
         }}
-        muted
-        playsInline
-        preload="auto"
         onSeeked={handleSeeked}
       />
 
@@ -926,18 +931,18 @@ export default function App() {
       </div>
 
       {activeNav === 'Home' ? (
-        <main className="relative z-[1] w-full h-screen flex flex-col justify-end md:justify-center px-5 sm:px-8 md:px-10 pb-6 sm:pb-12 md:pb-0 overflow-hidden">
-          <div className="max-w-xl relative z-10 w-full mb-4 sm:mb-0">
+        <main className="relative z-[1] w-full h-screen flex flex-col justify-end md:justify-center px-5 sm:px-8 md:px-10 pb-12 sm:pb-16 md:pb-0 overflow-hidden">
+          <div className="max-w-xl relative z-10 w-full mb-6 sm:mb-0">
             <div 
-              className="select-none mb-2 sm:mb-4 text-white font-normal"
-              style={{ fontSize: 'clamp(14px, 3.4vw, 26px)', lineHeight: 1.25 }}
+              className="select-none mb-2.5 sm:mb-4 text-white font-normal"
+              style={{ fontSize: 'clamp(15px, 3.6vw, 26px)', lineHeight: 1.25 }}
             >
               Hey there, meet Naman Jain,<br />A Student at Bennett university
             </div>
 
             <p 
-              className="text-white mb-3 sm:mb-6 font-normal"
-              style={{ fontSize: 'clamp(14px, 3.4vw, 26px)', lineHeight: 1.3, minHeight: '40px' }}
+              className="text-white mb-4 sm:mb-6 font-normal"
+              style={{ fontSize: 'clamp(15px, 3.6vw, 26px)', lineHeight: 1.3, minHeight: '44px' }}
             >
               {displayed}
               {!done && (
@@ -1224,8 +1229,8 @@ export default function App() {
           </div>
         </main>
       ) : activeNav === 'Languages' ? (
-        <main className="relative z-[1] w-full h-screen pt-28 pb-12 px-5 sm:px-8 md:px-16 max-w-7xl mx-auto cinematic-text flex flex-col justify-start overflow-hidden">
-          <div className="mb-2" style={{ marginLeft: window.innerWidth > 768 ? '45px' : '0px', marginTop: '10px' }}>
+        <main className="relative z-[1] w-full h-screen pt-36 sm:pt-40 pb-12 px-5 sm:px-8 md:px-16 max-w-7xl mx-auto cinematic-text flex flex-col justify-start overflow-hidden">
+          <div className="mb-2" style={{ marginLeft: window.innerWidth > 768 ? '45px' : '0px' }}>
             <h2 className="text-[28px] sm:text-[44px] font-medium text-white tracking-tight" style={{ fontFamily: 'var(--font-heading)' }}>
               My Learning
             </h2>
