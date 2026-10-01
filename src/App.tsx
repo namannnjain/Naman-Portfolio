@@ -495,27 +495,26 @@ export default function App() {
   const typewriterText = "Glad you stopped in. Good taste tends to find us. Now, what are we building?";
   const { displayed, done } = useTypewriter(typewriterText, 38, 1400);
 
-  // Auto load for PC, Button click trigger for Mobile
+  // Custom Continuous Ping-Pong Loop Engine (Forward & Reverse Infinite Loop)
+  const mobileDirRef = useRef<number>(1);
+  const touchStartX = useRef<number | null>(null);
+
   const handleEnterClick = () => {
     setLoaderFadeOut(true);
     setTimeout(() => setIsLoading(false), 700);
-
-    const vid = videoRef.current;
-    if (vid) {
-      vid.play().catch(() => {});
-    }
   };
 
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
     if (!isMobile) {
-      // PC auto load
+      // PC auto load without autoplay (starts paused at 1s or 0s)
       const timer = setTimeout(() => {
         setLoaderFadeOut(true);
         const removeTimer = setTimeout(() => setIsLoading(false), 700);
         const vid = videoRef.current;
         if (vid) {
-          vid.play().catch(() => {});
+          vid.pause();
+          vid.currentTime = 1.0;
         }
         return () => clearTimeout(removeTimer);
       }, 1600);
@@ -523,9 +522,33 @@ export default function App() {
     }
   }, []);
 
-  // Mobile Touch/Swipe Scrub Setup
-  const touchStartX = useRef<number | null>(null);
+  // Continuous Ping-Pong Loop for Mobile Video after entering
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
 
+    let animationId: number;
+    const updateMobileVideo = () => {
+      const vid = videoRef.current;
+      if (vid && !isLoading && !isNaN(vid.duration) && vid.duration > 0) {
+        let nextTime = vid.currentTime + mobileDirRef.current * 0.035;
+        if (nextTime >= vid.duration) {
+          nextTime = vid.duration;
+          mobileDirRef.current = -1; // Reverse direction
+        } else if (nextTime <= 0) {
+          nextTime = 0;
+          mobileDirRef.current = 1; // Forward direction
+        }
+        vid.currentTime = nextTime;
+      }
+      animationId = requestAnimationFrame(updateMobileVideo);
+    };
+
+    animationId = requestAnimationFrame(updateMobileVideo);
+    return () => cancelAnimationFrame(animationId);
+  }, [isLoading]);
+
+  // Mobile Touch Swipe Scrub Setup (Does not stop video loop, only scrubs smoothly)
   const handleMobileTouchStart = (e: React.TouchEvent) => {
     if (window.innerWidth < 768 && e.touches[0]) {
       touchStartX.current = e.touches[0].clientX;
@@ -872,7 +895,6 @@ export default function App() {
         src="/me.mp4"
         muted
         playsInline
-        loop
         className="fixed z-0 pointer-events-none object-cover video-blend"
         style={{
           width: window.innerWidth < 768 ? '100vw' : '75vw',
