@@ -43,9 +43,9 @@ const STYLES = `
   }
 
   .video-blend {
-    -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent 100%), radial-gradient(circle at 55% 48%, black 50%, transparent 90%);
+    -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%), radial-gradient(circle at 55% 48%, black 60%, transparent 100%);
     -webkit-mask-composite: intersect;
-    mask-image: linear-gradient(to bottom, black 75%, transparent 100%), radial-gradient(circle at 55% 48%, black 50%, transparent 90%);
+    mask-image: linear-gradient(to bottom, black 85%, transparent 100%), radial-gradient(circle at 55% 48%, black 60%, transparent 100%);
     mask-composite: intersect;
   }
 
@@ -495,28 +495,31 @@ export default function App() {
   const typewriterText = "Glad you stopped in. Good taste tends to find us. Now, what are we building?";
   const { displayed, done } = useTypewriter(typewriterText, 38, 1400);
 
-  // Mobile Back-and-Forth Auto Play Logic (Forward -> Reverse loop without abrupt restart)
+  // Robust Mobile Auto Play Ping-Pong Loop for Character Video
   const mobileDirRef = useRef<number>(1);
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
     if (!isMobile) return;
 
-    const interval = setInterval(() => {
+    let animationId: number;
+    const updateMobileVideo = () => {
       const vid = videoRef.current;
-      if (!vid || isNaN(vid.duration) || vid.duration <= 0) return;
-
-      let nextTime = vid.currentTime + mobileDirRef.current * 0.04;
-      if (nextTime >= vid.duration) {
-        nextTime = vid.duration;
-        mobileDirRef.current = -1; // Reverse direction
-      } else if (nextTime <= 0) {
-        nextTime = 0;
-        mobileDirRef.current = 1; // Forward direction
+      if (vid && !isNaN(vid.duration) && vid.duration > 0) {
+        let nextTime = vid.currentTime + mobileDirRef.current * 0.035;
+        if (nextTime >= vid.duration) {
+          nextTime = vid.duration;
+          mobileDirRef.current = -1;
+        } else if (nextTime <= 0) {
+          nextTime = 0;
+          mobileDirRef.current = 1;
+        }
+        vid.currentTime = nextTime;
       }
-      vid.currentTime = nextTime;
-    }, 40);
+      animationId = requestAnimationFrame(updateMobileVideo);
+    };
 
-    return () => clearInterval(interval);
+    animationId = requestAnimationFrame(updateMobileVideo);
+    return () => cancelAnimationFrame(animationId);
   }, []);
 
   useEffect(() => {
@@ -588,7 +591,6 @@ export default function App() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // PC Mouse Scrubbing
       if (window.innerWidth >= 768 && (activeNav === 'Home' || activeNav === 'Languages')) {
         const video = videoRef.current;
         if (video && !isNaN(video.duration) && video.duration > 0) {
@@ -838,18 +840,18 @@ export default function App() {
         </div>
       )}
       
-      {/* Background Character Video with Mobile-Optimized Layout */}
+      {/* Background Character Video with Sharp Mobile Layout and No Blur */}
       <video
         ref={videoRef}
         src="/me.mp4"
-        className="fixed z-0 pointer-events-none object-cover video-blend"
+        className="fixed z-0 pointer-events-none object-cover"
         style={{
           width: window.innerWidth < 768 ? '100vw' : '75vw',
-          height: window.innerWidth < 768 ? '42vh' : '85vh',
+          height: window.innerWidth < 768 ? '45vh' : '85vh',
           right: window.innerWidth < 768 ? '0' : '-5vw',
-          top: window.innerWidth < 768 ? '8vh' : '10vh',
-          objectPosition: window.innerWidth < 768 ? 'center 20%' : '70% center',
-          opacity: (activeNav === 'Journey' || activeNav === 'Work' || activeNav === 'Contact') ? 0.15 : (window.innerWidth < 768 ? 0.35 : 1),
+          top: window.innerWidth < 768 ? '6vh' : '10vh',
+          objectPosition: window.innerWidth < 768 ? 'center 15%' : '70% center',
+          opacity: (activeNav === 'Journey' || activeNav === 'Work' || activeNav === 'Contact') ? 0.15 : 1,
         }}
         muted
         playsInline
@@ -925,18 +927,18 @@ export default function App() {
       </div>
 
       {activeNav === 'Home' ? (
-        <main className="relative z-[1] w-full h-screen flex flex-col justify-end md:justify-center px-5 sm:px-8 md:px-10 pb-8 sm:pb-12 md:pb-0 overflow-hidden">
-          <div className="max-w-xl relative z-10 w-full mt-auto sm:mt-0 pt-44 sm:pt-0">
+        <main className="relative z-[1] w-full h-screen flex flex-col justify-end md:justify-center px-5 sm:px-8 md:px-10 pb-6 sm:pb-12 md:pb-0 overflow-hidden">
+          <div className="max-w-xl relative z-10 w-full mt-auto sm:mt-0 pt-48 sm:pt-0">
             <div 
-              className="select-none mb-3 sm:mb-6 text-white font-normal"
-              style={{ fontSize: 'clamp(16px, 3.8vw, 26px)', lineHeight: 1.3 }}
+              className="select-none mb-2.5 sm:mb-6 text-white font-normal"
+              style={{ fontSize: 'clamp(15px, 3.6vw, 26px)', lineHeight: 1.25 }}
             >
               Hey there, meet Naman Jain,<br />A Student at Bennett university
             </div>
 
             <p 
-              className="text-white mb-4 sm:mb-6 font-normal"
-              style={{ fontSize: 'clamp(16px, 3.8vw, 26px)', lineHeight: 1.35, minHeight: '48px' }}
+              className="text-white mb-3.5 sm:mb-6 font-normal"
+              style={{ fontSize: 'clamp(15px, 3.6vw, 26px)', lineHeight: 1.3, minHeight: '44px' }}
             >
               {displayed}
               {!done && (
