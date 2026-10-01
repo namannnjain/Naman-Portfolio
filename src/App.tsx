@@ -495,37 +495,45 @@ export default function App() {
   const typewriterText = "Glad you stopped in. Good taste tends to find us. Now, what are we building?";
   const { displayed, done } = useTypewriter(typewriterText, 38, 1400);
 
-  // Robust Mobile Auto-Play Ping-Pong Loop for Character Video
-  const mobileDirRef = useRef<number>(1);
+  // Mobile Touch/Swipe Interaction for Character Video (Paused at 1st second initially, swiping scrubs video)
+  const touchStartX = useRef<number | null>(null);
+
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
     if (!isMobile) return;
 
-    let animationId: number;
-    const updateMobileVideo = () => {
-      const vid = videoRef.current;
-      if (vid) {
-        if (vid.paused) {
-          vid.play().catch(() => {});
-        }
-        if (!isNaN(vid.duration) && vid.duration > 0) {
-          let nextTime = vid.currentTime + mobileDirRef.current * 0.035;
-          if (nextTime >= vid.duration) {
-            nextTime = vid.duration;
-            mobileDirRef.current = -1;
-          } else if (nextTime <= 0) {
-            nextTime = 0;
-            mobileDirRef.current = 1;
-          }
-          vid.currentTime = nextTime;
-        }
-      }
-      animationId = requestAnimationFrame(updateMobileVideo);
-    };
-
-    animationId = requestAnimationFrame(updateMobileVideo);
-    return () => cancelAnimationFrame(animationId);
+    const vid = videoRef.current;
+    if (vid) {
+      vid.pause();
+      vid.currentTime = 1.0; // Set to 1st second where character looks straight/center
+    }
   }, []);
+
+  const handleMobileTouchStart = (e: React.TouchEvent) => {
+    if (window.innerWidth < 768 && e.touches[0]) {
+      touchStartX.current = e.touches[0].clientX;
+    }
+  };
+
+  const handleMobileTouchMove = (e: React.TouchEvent) => {
+    if (window.innerWidth < 768 && touchStartX.current !== null && e.touches[0]) {
+      const currentX = e.touches[0].clientX;
+      const deltaX = currentX - touchStartX.current;
+      touchStartX.current = currentX;
+
+      const video = videoRef.current;
+      if (video && !isNaN(video.duration) && video.duration > 0) {
+        const sensitivity = 0.005;
+        let newTime = video.currentTime + deltaX * sensitivity;
+        newTime = Math.max(0, Math.min(video.duration, newTime));
+        video.currentTime = newTime;
+      }
+    }
+  };
+
+  const handleMobileTouchEnd = () => {
+    touchStartX.current = null;
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -848,7 +856,6 @@ export default function App() {
       <video
         ref={videoRef}
         src="/me.mp4"
-        autoPlay
         muted
         playsInline
         className="fixed z-0 pointer-events-none object-cover video-blend"
@@ -859,6 +866,12 @@ export default function App() {
           top: window.innerWidth < 768 ? '7vh' : '10vh',
           objectPosition: window.innerWidth < 768 ? 'center 12%' : '70% center',
           opacity: (activeNav === 'Journey' || activeNav === 'Work' || activeNav === 'Contact') ? 0.15 : 1,
+        }}
+        onLoadedMetadata={(e) => {
+          if (window.innerWidth < 768) {
+            e.currentTarget.pause();
+            e.currentTarget.currentTime = 1.0;
+          }
         }}
         onSeeked={handleSeeked}
       />
@@ -931,8 +944,14 @@ export default function App() {
       </div>
 
       {activeNav === 'Home' ? (
-        <main className="relative z-[1] w-full h-screen flex flex-col justify-end md:justify-center px-5 sm:px-8 md:px-10 pb-12 sm:pb-16 md:pb-0 overflow-hidden">
-          <div className="max-w-xl relative z-10 w-full mb-6 sm:mb-0">
+        <main 
+          onTouchStart={handleMobileTouchStart}
+          onTouchMove={handleMobileTouchMove}
+          onTouchEnd={handleMobileTouchEnd}
+          className="relative z-[1] w-full h-screen flex flex-col justify-center px-5 sm:px-8 md:px-10 pb-6 sm:pb-0 overflow-hidden"
+          style={{ paddingTop: window.innerWidth < 768 ? '25vh' : '0' }}
+        >
+          <div className="max-w-xl relative z-10 w-full mb-4 sm:mb-0">
             <div 
               className="select-none mb-2.5 sm:mb-4 text-white font-normal"
               style={{ fontSize: 'clamp(15px, 3.6vw, 26px)', lineHeight: 1.25 }}
