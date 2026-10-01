@@ -14,7 +14,7 @@ const STYLES = `
     margin: 0;
     padding: 0;
     background-color: #b81414;
-    overflow-x: hidden;
+    overflow: hidden;
     height: 100vh;
     width: 100vw;
   }
@@ -43,9 +43,9 @@ const STYLES = `
   }
 
   .video-blend {
-    -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%), radial-gradient(circle at 55% 48%, black 50%, transparent 90%);
+    -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%), radial-gradient(circle at 55% 48%, black 60%, transparent 100%);
     -webkit-mask-composite: intersect;
-    mask-image: linear-gradient(to bottom, black 80%, transparent 100%), radial-gradient(circle at 55% 48%, black 50%, transparent 90%);
+    mask-image: linear-gradient(to bottom, black 85%, transparent 100%), radial-gradient(circle at 55% 48%, black 60%, transparent 100%);
     mask-composite: intersect;
   }
 
@@ -249,14 +249,14 @@ function GlossyKineticCluster() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const ballsData = useRef([
-    { id: 1, name: 'Python', icon: '/python.png', homeX: 160, homeY: 200, size: 95 },
-    { id: 2, name: 'C++', icon: '/cpp.png', homeX: 280, homeY: 150, size: 95 },
-    { id: 3, name: 'JavaScript', icon: '/js.png', homeX: 200, homeY: 290, size: 105 },
-    { id: 4, name: 'HTML/CSS', icon: '/htmlcss.png', homeX: 310, homeY: 230, size: 100 },
-    { id: 5, name: 'React', icon: '/react.png', homeX: 130, homeY: 340, size: 95 },
-    { id: 6, name: 'Firebase', icon: '/firebase.png', homeX: 240, homeY: 370, size: 95 },
-    { id: 7, name: 'Canva', icon: '/canva.png', homeX: 110, homeY: 240, size: 95 },
-    { id: 8, name: 'CapCut', icon: '/capcut.png', homeX: 280, homeY: 310, size: 95 },
+    { id: 1, name: 'Python', icon: '/python.png', homeX: window.innerWidth < 768 ? 90 : 160, homeY: window.innerWidth < 768 ? 260 : 200, size: window.innerWidth < 768 ? 75 : 95 },
+    { id: 2, name: 'C++', icon: '/cpp.png', homeX: window.innerWidth < 768 ? 220 : 280, homeY: window.innerWidth < 768 ? 210 : 150, size: window.innerWidth < 768 ? 75 : 95 },
+    { id: 3, name: 'JavaScript', icon: '/js.png', homeX: window.innerWidth < 768 ? 160 : 200, homeY: window.innerWidth < 768 ? 340 : 290, size: window.innerWidth < 768 ? 82 : 105 },
+    { id: 4, name: 'HTML/CSS', icon: '/htmlcss.png', homeX: window.innerWidth < 768 ? 250 : 310, homeY: window.innerWidth < 768 ? 290 : 230, size: window.innerWidth < 768 ? 78 : 100 },
+    { id: 5, name: 'React', icon: '/react.png', homeX: window.innerWidth < 768 ? 85 : 130, homeY: window.innerWidth < 768 ? 390 : 340, size: window.innerWidth < 768 ? 75 : 95 },
+    { id: 6, name: 'Firebase', icon: '/firebase.png', homeX: window.innerWidth < 768 ? 190 : 240, homeY: window.innerWidth < 768 ? 410 : 370, size: window.innerWidth < 768 ? 75 : 95 },
+    { id: 7, name: 'Canva', icon: '/canva.png', homeX: window.innerWidth < 768 ? 70 : 110, homeY: window.innerWidth < 768 ? 310 : 240, size: window.innerWidth < 768 ? 75 : 95 },
+    { id: 8, name: 'CapCut', icon: '/capcut.png', homeX: window.innerWidth < 768 ? 230 : 280, homeY: window.innerWidth < 768 ? 360 : 310, size: window.innerWidth < 768 ? 75 : 95 },
   ]);
 
   const [renderBalls, setRenderBalls] = useState(
@@ -495,7 +495,7 @@ export default function App() {
   const typewriterText = "Glad you stopped in. Good taste tends to find us. Now, what are we building?";
   const { displayed, done } = useTypewriter(typewriterText, 38, 1400);
 
-  // Mobile Auto Play Ping-Pong Loop for Character Video
+  // Dedicated Mobile Auto Play Ping-Pong Loop for Character Video
   const mobileDirRef = useRef<number>(1);
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
@@ -840,17 +840,16 @@ export default function App() {
         </div>
       )}
       
-      {/* Background Character Video with Proper Blend & Mobile Layout */}
       <video
         ref={videoRef}
         src="/me.mp4"
         className="fixed z-0 pointer-events-none object-cover video-blend"
         style={{
           width: window.innerWidth < 768 ? '100vw' : '75vw',
-          height: window.innerWidth < 768 ? '48vh' : '85vh',
+          height: window.innerWidth < 768 ? '54vh' : '85vh',
           right: window.innerWidth < 768 ? '0' : '-5vw',
-          top: window.innerWidth < 768 ? '6vh' : '10vh',
-          objectPosition: window.innerWidth < 768 ? 'center 15%' : '70% center',
+          top: window.innerWidth < 768 ? '7vh' : '10vh',
+          objectPosition: window.innerWidth < 768 ? 'center 12%' : '70% center',
           opacity: (activeNav === 'Journey' || activeNav === 'Work' || activeNav === 'Contact') ? 0.15 : 1,
         }}
         muted
@@ -928,17 +927,17 @@ export default function App() {
 
       {activeNav === 'Home' ? (
         <main className="relative z-[1] w-full h-screen flex flex-col justify-end md:justify-center px-5 sm:px-8 md:px-10 pb-6 sm:pb-12 md:pb-0 overflow-hidden">
-          <div className="max-w-xl relative z-10 w-full mt-auto sm:mt-0 pt-48 sm:pt-0">
+          <div className="max-w-xl relative z-10 w-full mb-4 sm:mb-0">
             <div 
-              className="select-none mb-2.5 sm:mb-6 text-white font-normal"
-              style={{ fontSize: 'clamp(15px, 3.6vw, 26px)', lineHeight: 1.25 }}
+              className="select-none mb-2 sm:mb-4 text-white font-normal"
+              style={{ fontSize: 'clamp(14px, 3.4vw, 26px)', lineHeight: 1.25 }}
             >
               Hey there, meet Naman Jain,<br />A Student at Bennett university
             </div>
 
             <p 
-              className="text-white mb-3.5 sm:mb-6 font-normal"
-              style={{ fontSize: 'clamp(15px, 3.6vw, 26px)', lineHeight: 1.3, minHeight: '44px' }}
+              className="text-white mb-3 sm:mb-6 font-normal"
+              style={{ fontSize: 'clamp(14px, 3.4vw, 26px)', lineHeight: 1.3, minHeight: '40px' }}
             >
               {displayed}
               {!done && (
@@ -1225,9 +1224,9 @@ export default function App() {
           </div>
         </main>
       ) : activeNav === 'Languages' ? (
-        <main className="relative z-[1] w-full h-screen pt-32 pb-16 px-5 sm:px-8 md:px-16 max-w-7xl mx-auto cinematic-text flex flex-col justify-center overflow-hidden">
-          <div className="mb-4" style={{ marginLeft: window.innerWidth > 768 ? '45px' : '0px', marginTop: '10px' }}>
-            <h2 className="text-[34px] sm:text-[44px] font-medium text-white tracking-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+        <main className="relative z-[1] w-full h-screen pt-28 pb-12 px-5 sm:px-8 md:px-16 max-w-7xl mx-auto cinematic-text flex flex-col justify-start overflow-hidden">
+          <div className="mb-2" style={{ marginLeft: window.innerWidth > 768 ? '45px' : '0px', marginTop: '10px' }}>
+            <h2 className="text-[28px] sm:text-[44px] font-medium text-white tracking-tight" style={{ fontFamily: 'var(--font-heading)' }}>
               My Learning
             </h2>
           </div>
@@ -1247,7 +1246,6 @@ export default function App() {
             </p>
           </div>
 
-          {/* Floating Balloons Container properly sized */}
           <div className="relative w-full h-[52vh] flex justify-around items-start px-4 z-10">
             {[
               { id: 1, name: 'Gmail', icon: '/gmail.png', link: 'mailto:naman.edu.in@gmail.com', floatClass: 'float-1' },
@@ -1267,17 +1265,14 @@ export default function App() {
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
                   }}
                 >
-                  {/* Hot Air Balloon Image */}
                   <img 
                     src="/hotbaloon.png" 
                     alt="Hot Air Balloon" 
                     className="w-20 sm:w-28 md:w-32 object-contain filter drop-shadow-lg pointer-events-none" 
                   />
                   
-                  {/* Rope hanging down */}
                   <div className="w-[2px] h-10 bg-white/70 -mt-1" />
 
-                  {/* Clickable App Icon */}
                   <a
                     href={item.link}
                     target="_blank"
