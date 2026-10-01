@@ -496,25 +496,30 @@ export default function App() {
   const typewriterText = "Glad you stopped in. Good taste tends to find us. Now, what are we building?";
   const { displayed, done } = useTypewriter(typewriterText, 38, 1400);
 
-  // Custom Continuous Ping-Pong Loop Engine (Forward & Reverse Infinite Loop)
+  // Custom Continuous Ping-Pong Loop Engine with Mobile User Unlock
   const mobileDirRef = useRef<number>(1);
   const touchStartX = useRef<number | null>(null);
 
   const handleEnterClick = () => {
-    setLoaderFadeOut(true);
-    setMobileUnlocked(true);
-    setTimeout(() => setIsLoading(false), 700);
-
     const vid = videoRef.current;
     if (vid) {
-      vid.play().catch(() => {});
+      vid.muted = true;
+      vid.play().then(() => {
+        setMobileUnlocked(true);
+        setLoaderFadeOut(true);
+        setTimeout(() => setIsLoading(false), 700);
+      }).catch((err) => {
+        console.log("Play error:", err);
+      });
+    } else {
+      setLoaderFadeOut(true);
+      setTimeout(() => setIsLoading(false), 700);
     }
   };
 
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
     if (!isMobile) {
-      // PC auto load
       const timer = setTimeout(() => {
         setLoaderFadeOut(true);
         const removeTimer = setTimeout(() => setIsLoading(false), 700);
@@ -529,7 +534,7 @@ export default function App() {
     }
   }, []);
 
-  // Continuous Ping-Pong Loop for Mobile Video after user interaction unlock
+  // Ping-Pong Loop Engine for Mobile
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
     if (!isMobile || !mobileUnlocked) return;
@@ -555,7 +560,7 @@ export default function App() {
     return () => cancelAnimationFrame(animationId);
   }, [mobileUnlocked]);
 
-  // Mobile Touch Swipe Scrub Setup (Only scrubs video time, does not stop or toggle play/pause)
+  // Mobile Touch Swipe Scrub Setup
   const handleMobileTouchStart = (e: React.TouchEvent) => {
     if (window.innerWidth < 768 && e.touches[0]) {
       touchStartX.current = e.touches[0].clientX;
@@ -885,7 +890,7 @@ export default function App() {
               <div className="h-full bg-white loader-bar" />
             </div>
 
-            {/* Mobile Only Enter Button to Unlock Audio/Video Playback */}
+            {/* Mobile Only Unlock & Enter Button */}
             <button
               onClick={handleEnterClick}
               className="relative z-25 sm:hidden px-6 py-3 bg-white text-black font-medium rounded-full shadow-2xl text-[15px] border border-white/40 active:scale-95 transition-transform cursor-pointer"
