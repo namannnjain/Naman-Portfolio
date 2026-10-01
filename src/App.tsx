@@ -432,6 +432,7 @@ export default function App() {
   const [isIframeLoading, setIsIframeLoading] = useState(true);
   const [currentCanvaIndex, setCurrentCanvaIndex] = useState(0);
   const [fadeAnim, setFadeAnim] = useState(true);
+  const [mobileVideoPlaying, setMobileVideoPlaying] = useState(false);
 
   const [cardPhase, setCardPhase] = useState<'hidden' | 'stacked' | 'spread'>('hidden');
 
@@ -495,7 +496,7 @@ export default function App() {
   const typewriterText = "Glad you stopped in. Good taste tends to find us. Now, what are we building?";
   const { displayed, done } = useTypewriter(typewriterText, 38, 1400);
 
-  // Mobile Touch/Swipe Interaction for Character Video (Paused at 1st second initially, swiping scrubs video)
+  // Mobile Touch/Swipe Interaction & 1s pause setup
   const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
@@ -505,9 +506,18 @@ export default function App() {
     const vid = videoRef.current;
     if (vid) {
       vid.pause();
-      vid.currentTime = 1.0; // Set to 1st second where character looks straight/center
+      vid.currentTime = 1.0; 
     }
   }, []);
+
+  const handleMobilePlayClick = () => {
+    const vid = videoRef.current;
+    if (vid) {
+      vid.play().then(() => {
+        setMobileVideoPlaying(true);
+      }).catch(() => {});
+    }
+  };
 
   const handleMobileTouchStart = (e: React.TouchEvent) => {
     if (window.innerWidth < 768 && e.touches[0]) {
@@ -876,6 +886,18 @@ export default function App() {
         onSeeked={handleSeeked}
       />
 
+      {window.innerWidth < 768 && activeNav === 'Home' && !mobileVideoPlaying && (
+        <div className="fixed top-[32vh] left-0 w-full flex justify-center z-20 pointer-events-auto">
+          <button
+            onClick={handleMobilePlayClick}
+            className="px-5 py-2.5 bg-white text-black font-medium rounded-full shadow-2xl text-[14px] border border-white/40 active:scale-95 transition-transform"
+            style={{ fontFamily: 'var(--font-heading)' }}
+          >
+            Click Here to Play Video
+          </button>
+        </div>
+      )}
+
       <nav className="fixed top-0 w-full z-[10] flex justify-between items-center px-5 sm:px-8 py-4 sm:py-5 bg-[#b81414]/80 backdrop-blur-md">
         <div className="flex flex-row items-center cursor-pointer" onClick={() => setActiveNav('Home')}>
           <span 
@@ -949,7 +971,7 @@ export default function App() {
           onTouchMove={handleMobileTouchMove}
           onTouchEnd={handleMobileTouchEnd}
           className="relative z-[1] w-full h-screen flex flex-col justify-center px-5 sm:px-8 md:px-10 pb-6 sm:pb-0 overflow-hidden"
-          style={{ paddingTop: window.innerWidth < 768 ? '25vh' : '0' }}
+          style={{ paddingTop: window.innerWidth < 768 ? 'calc(25vh + 100px)' : '0' }}
         >
           <div className="max-w-xl relative z-10 w-full mb-4 sm:mb-0">
             <div 
@@ -1248,15 +1270,21 @@ export default function App() {
           </div>
         </main>
       ) : activeNav === 'Languages' ? (
-        <main className="relative z-[1] w-full h-screen pt-36 sm:pt-40 pb-12 px-5 sm:px-8 md:px-16 max-w-7xl mx-auto cinematic-text flex flex-col justify-start overflow-hidden">
-          <div className="mb-2" style={{ marginLeft: window.innerWidth > 768 ? '45px' : '0px' }}>
-            <h2 className="text-[28px] sm:text-[44px] font-medium text-white tracking-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+        <main className="relative z-[1] w-full h-screen pt-36 sm:pt-40 pb-20 sm:pb-12 px-5 sm:px-8 md:px-16 max-w-7xl mx-auto cinematic-text flex flex-col justify-between sm:justify-start overflow-hidden">
+          <div className="w-full">
+            <GlossyKineticCluster />
+          </div>
+          
+          <div className="w-full text-center pb-8 sm:hidden mt-auto">
+            <h2 className="text-[32px] font-medium text-white tracking-tight" style={{ fontFamily: 'var(--font-heading)' }}>
               My Learning
             </h2>
           </div>
 
-          <div className="w-full">
-            <GlossyKineticCluster />
+          <div className="hidden sm:block mb-2" style={{ marginLeft: window.innerWidth > 768 ? '45px' : '0px' }}>
+            <h2 className="text-[44px] font-medium text-white tracking-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+              My Learning
+            </h2>
           </div>
         </main>
       ) : activeNav === 'Contact' ? (
