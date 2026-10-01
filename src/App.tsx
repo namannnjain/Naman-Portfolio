@@ -432,7 +432,6 @@ export default function App() {
   const [isIframeLoading, setIsIframeLoading] = useState(true);
   const [currentCanvaIndex, setCurrentCanvaIndex] = useState(0);
   const [fadeAnim, setFadeAnim] = useState(true);
-  const [mobileVideoPlaying, setMobileVideoPlaying] = useState(false);
 
   const [cardPhase, setCardPhase] = useState<'hidden' | 'stacked' | 'spread'>('hidden');
 
@@ -496,28 +495,47 @@ export default function App() {
   const typewriterText = "Glad you stopped in. Good taste tends to find us. Now, what are we building?";
   const { displayed, done } = useTypewriter(typewriterText, 38, 1400);
 
-  // Mobile Touch/Swipe Interaction & 1s pause setup
+  // Mobile Infinite Ping-Pong Loop & Touch/Swipe Setup
+  const mobileDirRef = useRef<number>(1);
   const touchStartX = useRef<number | null>(null);
+
+  const handleEnterClick = () => {
+    setLoaderFadeOut(true);
+    setTimeout(() => setIsLoading(false), 700);
+
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      const vid = videoRef.current;
+      if (vid) {
+        vid.play().catch(() => {});
+      }
+    }
+  };
 
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
     if (!isMobile) return;
 
-    const vid = videoRef.current;
-    if (vid) {
-      vid.pause();
-      vid.currentTime = 1.0; 
-    }
-  }, []);
+    let animationId: number;
+    const updateMobileVideo = () => {
+      const vid = videoRef.current;
+      if (vid && !isLoading && !isNaN(vid.duration) && vid.duration > 0) {
+        let nextTime = vid.currentTime + mobileDirRef.current * 0.035;
+        if (nextTime >= vid.duration) {
+          nextTime = vid.duration;
+          mobileDirRef.current = -1;
+        } else if (nextTime <= 0) {
+          nextTime = 0;
+          mobileDirRef.current = 1;
+        }
+        vid.currentTime = nextTime;
+      }
+      animationId = requestAnimationFrame(updateMobileVideo);
+    };
 
-  const handleMobilePlayClick = () => {
-    const vid = videoRef.current;
-    if (vid) {
-      vid.play().then(() => {
-        setMobileVideoPlaying(true);
-      }).catch(() => {});
-    }
-  };
+    animationId = requestAnimationFrame(updateMobileVideo);
+    return () => cancelAnimationFrame(animationId);
+  }, [isLoading]);
 
   const handleMobileTouchStart = (e: React.TouchEvent) => {
     if (window.innerWidth < 768 && e.touches[0]) {
@@ -544,15 +562,6 @@ export default function App() {
   const handleMobileTouchEnd = () => {
     touchStartX.current = null;
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoaderFadeOut(true);
-      const removeTimer = setTimeout(() => setIsLoading(false), 700);
-      return () => clearTimeout(removeTimer);
-    }, 1600);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (!isLoading) {
@@ -845,7 +854,7 @@ export default function App() {
             loaderFadeOut ? 'opacity-0 -translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'
           }`}
         >
-          <div className="text-center relative">
+          <div className="text-center relative px-6 flex flex-col items-center">
             <div className="absolute inset-0 bg-[#b81414] opacity-20 filter blur-3xl rounded-full transform scale-150 pointer-events-none" />
             <h1 
               className="text-white text-[34px] sm:text-[48px] tracking-tight cinematic-text mb-4 font-medium relative z-10"
@@ -853,12 +862,17 @@ export default function App() {
             >
               Naman Jain&reg;
             </h1>
-            <div className="w-40 h-[2px] bg-white/10 mx-auto overflow-hidden rounded-full relative z-10">
+            <div className="w-40 h-[2px] bg-white/10 mx-auto overflow-hidden rounded-full relative z-10 mb-6">
               <div className="h-full bg-white loader-bar" />
             </div>
-            <p className="text-white/40 text-[13px] tracking-widest uppercase mt-3 relative z-10 font-mono">
-              Loading Experience
-            </p>
+
+            <button
+              onClick={handleEnterClick}
+              className="relative z-20 px-6 py-3 bg-white text-black font-medium rounded-full shadow-2xl text-[15px] border border-white/40 active:scale-95 transition-transform cursor-pointer"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              Click Here to Enter
+            </button>
           </div>
         </div>
       )}
@@ -877,26 +891,8 @@ export default function App() {
           objectPosition: window.innerWidth < 768 ? 'center 12%' : '70% center',
           opacity: (activeNav === 'Journey' || activeNav === 'Work' || activeNav === 'Contact') ? 0.15 : 1,
         }}
-        onLoadedMetadata={(e) => {
-          if (window.innerWidth < 768) {
-            e.currentTarget.pause();
-            e.currentTarget.currentTime = 1.0;
-          }
-        }}
         onSeeked={handleSeeked}
       />
-
-      {window.innerWidth < 768 && activeNav === 'Home' && !mobileVideoPlaying && (
-        <div className="fixed top-[32vh] left-0 w-full flex justify-center z-20 pointer-events-auto">
-          <button
-            onClick={handleMobilePlayClick}
-            className="px-5 py-2.5 bg-white text-black font-medium rounded-full shadow-2xl text-[14px] border border-white/40 active:scale-95 transition-transform"
-            style={{ fontFamily: 'var(--font-heading)' }}
-          >
-            Click Here to Play Video
-          </button>
-        </div>
-      )}
 
       <nav className="fixed top-0 w-full z-[10] flex justify-between items-center px-5 sm:px-8 py-4 sm:py-5 bg-[#b81414]/80 backdrop-blur-md">
         <div className="flex flex-row items-center cursor-pointer" onClick={() => setActiveNav('Home')}>
@@ -971,7 +967,7 @@ export default function App() {
           onTouchMove={handleMobileTouchMove}
           onTouchEnd={handleMobileTouchEnd}
           className="relative z-[1] w-full h-screen flex flex-col justify-center px-5 sm:px-8 md:px-10 pb-6 sm:pb-0 overflow-hidden"
-          style={{ paddingTop: window.innerWidth < 768 ? 'calc(25vh + 100px)' : '0' }}
+          style={{ paddingTop: window.innerWidth < 768 ? 'calc(25vh + 190px)' : '0' }}
         >
           <div className="max-w-xl relative z-10 w-full mb-4 sm:mb-0">
             <div 
