@@ -14,7 +14,7 @@ const STYLES = `
     margin: 0;
     padding: 0;
     background-color: #b81414;
-    overflow: hidden;
+    overflow-x: hidden;
     height: 100vh;
     width: 100vw;
   }
@@ -43,9 +43,9 @@ const STYLES = `
   }
 
   .video-blend {
-    -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%), radial-gradient(circle at 55% 48%, black 50%, transparent 90%);
+    -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent 100%), radial-gradient(circle at 55% 48%, black 50%, transparent 90%);
     -webkit-mask-composite: intersect;
-    mask-image: linear-gradient(to bottom, black 80%, transparent 100%), radial-gradient(circle at 55% 48%, black 50%, transparent 90%);
+    mask-image: linear-gradient(to bottom, black 75%, transparent 100%), radial-gradient(circle at 55% 48%, black 50%, transparent 90%);
     mask-composite: intersect;
   }
 
@@ -270,10 +270,8 @@ function GlossyKineticCluster() {
     prevY: -1000,
     vx: 0,
     vy: 0,
-    isShaking: false,
   });
 
-  // Mouse Move for PC
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -295,7 +293,6 @@ function GlossyKineticCluster() {
     interactionState.current.vy = 0;
   };
 
-  // Touch & Mobile Interaction / Shake effect support
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
     if (!containerRef.current || !e.touches[0]) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -308,14 +305,12 @@ function GlossyKineticCluster() {
     interactionState.current.vy = 15;
   };
 
-  // Device Shake listener for Mobile Phones
   useEffect(() => {
     const handleDeviceMotion = (event: DeviceMotionEvent) => {
       const acc = event.accelerationIncludingGravity;
       if (!acc) return;
-      const threshold = 18; // Shake strength threshold
+      const threshold = 18;
       if (acc.x && acc.y && (Math.abs(acc.x) > threshold || Math.abs(acc.y) > threshold)) {
-        // Trigger scatter impulse on all balls
         setRenderBalls((prev) =>
           prev.map((ball) => ({
             ...ball,
@@ -440,7 +435,6 @@ export default function App() {
 
   const [cardPhase, setCardPhase] = useState<'hidden' | 'stacked' | 'spread'>('hidden');
 
-  // Persistent accumulated escape offsets for floating balloons
   const [escapeOffsets, setEscapeOffsets] = useState([
     { x: 0, y: 0 },
     { x: 0, y: 0 },
@@ -500,6 +494,30 @@ export default function App() {
 
   const typewriterText = "Glad you stopped in. Good taste tends to find us. Now, what are we building?";
   const { displayed, done } = useTypewriter(typewriterText, 38, 1400);
+
+  // Mobile Back-and-Forth Auto Play Logic (Forward -> Reverse loop without abrupt restart)
+  const mobileDirRef = useRef<number>(1);
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
+
+    const interval = setInterval(() => {
+      const vid = videoRef.current;
+      if (!vid || isNaN(vid.duration) || vid.duration <= 0) return;
+
+      let nextTime = vid.currentTime + mobileDirRef.current * 0.04;
+      if (nextTime >= vid.duration) {
+        nextTime = vid.duration;
+        mobileDirRef.current = -1; // Reverse direction
+      } else if (nextTime <= 0) {
+        nextTime = 0;
+        mobileDirRef.current = 1; // Forward direction
+      }
+      vid.currentTime = nextTime;
+    }, 40);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -570,7 +588,8 @@ export default function App() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (activeNav === 'Home' || activeNav === 'Languages') {
+      // PC Mouse Scrubbing
+      if (window.innerWidth >= 768 && (activeNav === 'Home' || activeNav === 'Languages')) {
         const video = videoRef.current;
         if (video && !isNaN(video.duration) && video.duration > 0) {
           if (prevX.current === null) {
@@ -589,7 +608,6 @@ export default function App() {
         }
       }
 
-      // Contact Page: Smooth chase-away glide when mouse touches flying balloons
       if (activeNav === 'Contact') {
         setEscapeOffsets((prev) => {
           return prev.map((offset, idx) => {
@@ -675,7 +693,7 @@ export default function App() {
       stackStyle: { transform: cardPhase === 'hidden' ? 'translateX(-110vw) rotate(-20deg)' : cardPhase === 'stacked' ? 'translateX(0vw) translateY(30px) rotate(-4deg) scale(0.96)' : 'translateX(0) translateY(0) rotate(0deg) scale(1)', opacity: cardPhase === 'hidden' ? 0 : 1, zIndex: 3 }
     },
     {
-      title: "CapCut Video Edit Showreel",
+      title: "Video Edit Showreel",
       description: "A cinematic compilation of video edits, visual effects, and motion graphics crafted using professional post-production suites.",
       tech: ["CapCut", "After Effects", "DaVinci Resolve", "Motion Graphics"],
       liveUrl: "#",
@@ -699,7 +717,6 @@ export default function App() {
     <>
       <style>{STYLES}</style>
 
-      {/* Apple-style 3D Liquid Glass Modal: Website Preview */}
       {isWebsiteExpanded && (
         <div className="apple-liquid-glass-overlay">
           <div className="apple-liquid-glass-box p-6 max-w-5xl w-[85vw] h-[85vh] flex flex-col items-center relative">
@@ -733,7 +750,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Apple-style 3D Liquid Glass Modal: Video Showreel */}
       {isVideoExpanded && (
         <div className="apple-liquid-glass-overlay">
           <div className="apple-liquid-glass-box p-6 max-w-3xl w-[75vw] flex flex-col items-center relative">
@@ -768,7 +784,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Apple-style 3D Liquid Glass Modal: Canva Designs */}
       {isCanvaExpanded && (
         <div className="apple-liquid-glass-overlay">
           <div className="apple-liquid-glass-box p-6 max-w-3xl w-[75vw] flex flex-col items-center relative">
@@ -823,18 +838,18 @@ export default function App() {
         </div>
       )}
       
-      {/* Background Character Video with Responsive Mobile Sizing */}
+      {/* Background Character Video with Mobile-Optimized Layout */}
       <video
         ref={videoRef}
         src="/me.mp4"
-        className="fixed z-0 pointer-events-none object-cover video-blend md:block"
+        className="fixed z-0 pointer-events-none object-cover video-blend"
         style={{
           width: window.innerWidth < 768 ? '100vw' : '75vw',
-          height: window.innerWidth < 768 ? '50vh' : '85vh',
+          height: window.innerWidth < 768 ? '42vh' : '85vh',
           right: window.innerWidth < 768 ? '0' : '-5vw',
-          top: window.innerWidth < 768 ? '35vh' : '10vh',
-          objectPosition: '70% center',
-          opacity: (activeNav === 'Journey' || activeNav === 'Work' || activeNav === 'Contact') ? 0.15 : (window.innerWidth < 768 ? 0.4 : 1),
+          top: window.innerWidth < 768 ? '8vh' : '10vh',
+          objectPosition: window.innerWidth < 768 ? 'center 20%' : '70% center',
+          opacity: (activeNav === 'Journey' || activeNav === 'Work' || activeNav === 'Contact') ? 0.15 : (window.innerWidth < 768 ? 0.35 : 1),
         }}
         muted
         playsInline
@@ -910,18 +925,18 @@ export default function App() {
       </div>
 
       {activeNav === 'Home' ? (
-        <main className="relative z-[1] w-full h-screen flex flex-col justify-end md:justify-center px-5 sm:px-8 md:px-10 pb-12 md:pb-0 overflow-hidden">
-          <div className="max-w-xl relative z-10 w-full">
+        <main className="relative z-[1] w-full h-screen flex flex-col justify-end md:justify-center px-5 sm:px-8 md:px-10 pb-8 sm:pb-12 md:pb-0 overflow-hidden">
+          <div className="max-w-xl relative z-10 w-full mt-auto sm:mt-0 pt-44 sm:pt-0">
             <div 
-              className="select-none mb-5 sm:mb-6 text-white font-normal"
-              style={{ fontSize: 'clamp(18px, 4vw, 26px)', lineHeight: 1.3 }}
+              className="select-none mb-3 sm:mb-6 text-white font-normal"
+              style={{ fontSize: 'clamp(16px, 3.8vw, 26px)', lineHeight: 1.3 }}
             >
               Hey there, meet Naman Jain,<br />A Student at Bennett university
             </div>
 
             <p 
-              className="text-white mb-5 sm:mb-6 font-normal"
-              style={{ fontSize: 'clamp(18px, 4vw, 26px)', lineHeight: 1.35, minHeight: '54px' }}
+              className="text-white mb-4 sm:mb-6 font-normal"
+              style={{ fontSize: 'clamp(16px, 3.8vw, 26px)', lineHeight: 1.35, minHeight: '48px' }}
             >
               {displayed}
               {!done && (
@@ -939,7 +954,7 @@ export default function App() {
             >
               <button 
                 onClick={handleCopy}
-                className="inline-flex items-center justify-center bg-transparent text-white border border-white rounded-full text-[13px] sm:text-[15px] px-4 sm:px-5 py-[0.3em] mx-[0.2em] mb-[0.4em] whitespace-nowrap hover:bg-white hover:text-black transition-colors duration-200 gap-2 sm:gap-3 group cursor-pointer"
+                className="inline-flex items-center justify-center bg-transparent text-white border border-white rounded-full text-[12px] sm:text-[15px] px-4 sm:px-5 py-[0.3em] mx-[0.2em] mb-[0.4em] whitespace-nowrap hover:bg-white hover:text-black transition-colors duration-200 gap-2 sm:gap-3 group cursor-pointer"
               >
                 <span>
                   Reach us: <span className="underline underline-offset-1">naman.edu.in@gmail.com</span>
@@ -1201,7 +1216,7 @@ export default function App() {
                 </div>
                 <div>
                   <h3 className="text-[22px] font-medium text-white mb-1" style={{ fontFamily: 'var(--font-heading)' }}>GitHub</h3>
-                  <p className="text-white/70 text-[15px]">Explore my repositories, open-source-code and contributions.</p>
+                  <p className="text-white/70 text-[15px]">Explore my repositories, open-source code and contributions.</p>
                 </div>
               </a>
             </div>
