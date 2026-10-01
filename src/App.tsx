@@ -630,7 +630,7 @@ export default function App() {
       stackStyle: { transform: cardPhase === 'hidden' ? 'translateX(-110vw) rotate(-20deg)' : cardPhase === 'stacked' ? 'translateX(0vw) translateY(30px) rotate(-4deg) scale(0.96)' : 'translateX(0) translateY(0) rotate(0deg) scale(1)', opacity: cardPhase === 'hidden' ? 0 : 1, zIndex: 3 }
     },
     {
-      title: "Video Edit Showreel",
+      title: "Video Edit Showreel CapCut",
       description: "A cinematic compilation of video edits, visual effects, and motion graphics crafted using professional post-production suites.",
       tech: ["CapCut", "After Effects", "DaVinci Resolve", "Motion Graphics"],
       liveUrl: "#",
