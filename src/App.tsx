@@ -432,6 +432,7 @@ export default function App() {
   const [isIframeLoading, setIsIframeLoading] = useState(true);
   const [currentCanvaIndex, setCurrentCanvaIndex] = useState(0);
   const [fadeAnim, setFadeAnim] = useState(true);
+  const [mobileUnlocked, setMobileUnlocked] = useState(false);
 
   const [cardPhase, setCardPhase] = useState<'hidden' | 'stacked' | 'spread'>('hidden');
 
@@ -501,13 +502,19 @@ export default function App() {
 
   const handleEnterClick = () => {
     setLoaderFadeOut(true);
+    setMobileUnlocked(true);
     setTimeout(() => setIsLoading(false), 700);
+
+    const vid = videoRef.current;
+    if (vid) {
+      vid.play().catch(() => {});
+    }
   };
 
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
     if (!isMobile) {
-      // PC auto load without autoplay (starts paused at 1s or 0s)
+      // PC auto load
       const timer = setTimeout(() => {
         setLoaderFadeOut(true);
         const removeTimer = setTimeout(() => setIsLoading(false), 700);
@@ -522,15 +529,15 @@ export default function App() {
     }
   }, []);
 
-  // Continuous Ping-Pong Loop for Mobile Video after entering
+  // Continuous Ping-Pong Loop for Mobile Video after user interaction unlock
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
-    if (!isMobile) return;
+    if (!isMobile || !mobileUnlocked) return;
 
     let animationId: number;
     const updateMobileVideo = () => {
       const vid = videoRef.current;
-      if (vid && !isLoading && !isNaN(vid.duration) && vid.duration > 0) {
+      if (vid && !isNaN(vid.duration) && vid.duration > 0) {
         let nextTime = vid.currentTime + mobileDirRef.current * 0.035;
         if (nextTime >= vid.duration) {
           nextTime = vid.duration;
@@ -546,9 +553,9 @@ export default function App() {
 
     animationId = requestAnimationFrame(updateMobileVideo);
     return () => cancelAnimationFrame(animationId);
-  }, [isLoading]);
+  }, [mobileUnlocked]);
 
-  // Mobile Touch Swipe Scrub Setup (Does not stop video loop, only scrubs smoothly)
+  // Mobile Touch Swipe Scrub Setup (Only scrubs video time, does not stop or toggle play/pause)
   const handleMobileTouchStart = (e: React.TouchEvent) => {
     if (window.innerWidth < 768 && e.touches[0]) {
       touchStartX.current = e.touches[0].clientX;
@@ -878,7 +885,7 @@ export default function App() {
               <div className="h-full bg-white loader-bar" />
             </div>
 
-            {/* Mobile Only Enter Button */}
+            {/* Mobile Only Enter Button to Unlock Audio/Video Playback */}
             <button
               onClick={handleEnterClick}
               className="relative z-25 sm:hidden px-6 py-3 bg-white text-black font-medium rounded-full shadow-2xl text-[15px] border border-white/40 active:scale-95 transition-transform cursor-pointer"
