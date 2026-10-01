@@ -495,47 +495,36 @@ export default function App() {
   const typewriterText = "Glad you stopped in. Good taste tends to find us. Now, what are we building?";
   const { displayed, done } = useTypewriter(typewriterText, 38, 1400);
 
-  // Mobile Infinite Ping-Pong Loop & Touch/Swipe Setup
-  const mobileDirRef = useRef<number>(1);
-  const touchStartX = useRef<number | null>(null);
-
+  // Auto load for PC, Button click trigger for Mobile
   const handleEnterClick = () => {
     setLoaderFadeOut(true);
     setTimeout(() => setIsLoading(false), 700);
 
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) {
-      const vid = videoRef.current;
-      if (vid) {
-        vid.play().catch(() => {});
-      }
+    const vid = videoRef.current;
+    if (vid) {
+      vid.play().catch(() => {});
     }
   };
 
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
-    if (!isMobile) return;
-
-    let animationId: number;
-    const updateMobileVideo = () => {
-      const vid = videoRef.current;
-      if (vid && !isLoading && !isNaN(vid.duration) && vid.duration > 0) {
-        let nextTime = vid.currentTime + mobileDirRef.current * 0.035;
-        if (nextTime >= vid.duration) {
-          nextTime = vid.duration;
-          mobileDirRef.current = -1;
-        } else if (nextTime <= 0) {
-          nextTime = 0;
-          mobileDirRef.current = 1;
+    if (!isMobile) {
+      // PC auto load
+      const timer = setTimeout(() => {
+        setLoaderFadeOut(true);
+        const removeTimer = setTimeout(() => setIsLoading(false), 700);
+        const vid = videoRef.current;
+        if (vid) {
+          vid.play().catch(() => {});
         }
-        vid.currentTime = nextTime;
-      }
-      animationId = requestAnimationFrame(updateMobileVideo);
-    };
+        return () => clearTimeout(removeTimer);
+      }, 1600);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
-    animationId = requestAnimationFrame(updateMobileVideo);
-    return () => cancelAnimationFrame(animationId);
-  }, [isLoading]);
+  // Mobile Touch/Swipe Scrub Setup
+  const touchStartX = useRef<number | null>(null);
 
   const handleMobileTouchStart = (e: React.TouchEvent) => {
     if (window.innerWidth < 768 && e.touches[0]) {
@@ -551,7 +540,7 @@ export default function App() {
 
       const video = videoRef.current;
       if (video && !isNaN(video.duration) && video.duration > 0) {
-        const sensitivity = 0.005;
+        const sensitivity = 0.008;
         let newTime = video.currentTime + deltaX * sensitivity;
         newTime = Math.max(0, Math.min(video.duration, newTime));
         video.currentTime = newTime;
@@ -866,9 +855,10 @@ export default function App() {
               <div className="h-full bg-white loader-bar" />
             </div>
 
+            {/* Mobile Only Enter Button */}
             <button
               onClick={handleEnterClick}
-              className="relative z-20 px-6 py-3 bg-white text-black font-medium rounded-full shadow-2xl text-[15px] border border-white/40 active:scale-95 transition-transform cursor-pointer"
+              className="relative z-25 sm:hidden px-6 py-3 bg-white text-black font-medium rounded-full shadow-2xl text-[15px] border border-white/40 active:scale-95 transition-transform cursor-pointer"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Click Here to Enter
@@ -882,6 +872,7 @@ export default function App() {
         src="/me.mp4"
         muted
         playsInline
+        loop
         className="fixed z-0 pointer-events-none object-cover video-blend"
         style={{
           width: window.innerWidth < 768 ? '100vw' : '75vw',
