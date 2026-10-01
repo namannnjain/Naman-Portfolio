@@ -249,79 +249,122 @@ function GlossyKineticCluster() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const ballsData = useRef([
-    { id: 1, name: 'Python', icon: '/python.png', homeX: 160, homeY: 200, size: 105 },
-    { id: 2, name: 'C++', icon: '/cpp.png', homeX: 280, homeY: 150, size: 105 },
-    { id: 3, name: 'JavaScript', icon: '/js.png', homeX: 200, homeY: 300, size: 115 },
-    { id: 4, name: 'HTML/CSS', icon: '/htmlcss.png', homeX: 320, homeY: 240, size: 110 },
-    { id: 5, name: 'React', icon: '/react.png', homeX: 130, homeY: 360, size: 105 },
-    { id: 6, name: 'Firebase', icon: '/firebase.png', homeX: 250, homeY: 390, size: 105 },
-    { id: 7, name: 'Canva', icon: '/canva.png', homeX: 120, homeY: 250, size: 105 },
-    { id: 8, name: 'CapCut', icon: '/capcut.png', homeX: 290, homeY: 330, size: 105 },
+    { id: 1, name: 'Python', icon: '/python.png', homeX: 160, homeY: 200, size: 95 },
+    { id: 2, name: 'C++', icon: '/cpp.png', homeX: 280, homeY: 150, size: 95 },
+    { id: 3, name: 'JavaScript', icon: '/js.png', homeX: 200, homeY: 290, size: 105 },
+    { id: 4, name: 'HTML/CSS', icon: '/htmlcss.png', homeX: 310, homeY: 230, size: 100 },
+    { id: 5, name: 'React', icon: '/react.png', homeX: 130, homeY: 340, size: 95 },
+    { id: 6, name: 'Firebase', icon: '/firebase.png', homeX: 240, homeY: 370, size: 95 },
+    { id: 7, name: 'Canva', icon: '/canva.png', homeX: 110, homeY: 240, size: 95 },
+    { id: 8, name: 'CapCut', icon: '/capcut.png', homeX: 280, homeY: 310, size: 95 },
   ]);
 
   const [renderBalls, setRenderBalls] = useState(
     ballsData.current.map((b) => ({ ...b, x: b.homeX, y: b.homeY, vx: 0, vy: 0 }))
   );
 
-  const mouseState = useRef({
+  const interactionState = useRef({
     x: -1000,
     y: -1000,
     prevX: -1000,
     prevY: -1000,
     vx: 0,
     vy: 0,
+    isShaking: false,
   });
 
+  // Mouse Move for PC
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const currentX = e.clientX - rect.left;
     const currentY = e.clientY - rect.top;
 
-    mouseState.current.vx = currentX - mouseState.current.prevX;
-    mouseState.current.vy = currentY - mouseState.current.prevY;
-    mouseState.current.x = currentX;
-    mouseState.current.y = currentY;
-    mouseState.current.prevX = currentX;
-    mouseState.current.prevY = currentY;
+    interactionState.current.vx = currentX - interactionState.current.prevX;
+    interactionState.current.vy = currentY - interactionState.current.prevY;
+    interactionState.current.x = currentX;
+    interactionState.current.y = currentY;
+    interactionState.current.prevX = currentX;
+    interactionState.current.prevY = currentY;
   };
 
   const handleMouseLeave = () => {
-    mouseState.current.x = -1000;
-    mouseState.current.y = -1000;
-    mouseState.current.vx = 0;
-    mouseState.current.vy = 0;
+    interactionState.current.x = -1000;
+    interactionState.current.y = -1000;
+    interactionState.current.vx = 0;
+    interactionState.current.vy = 0;
   };
+
+  // Touch & Mobile Interaction / Shake effect support
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!containerRef.current || !e.touches[0]) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const currentX = e.touches[0].clientX - rect.left;
+    const currentY = e.touches[0].clientY - rect.top;
+
+    interactionState.current.x = currentX;
+    interactionState.current.y = currentY;
+    interactionState.current.vx = 15;
+    interactionState.current.vy = 15;
+  };
+
+  // Device Shake listener for Mobile Phones
+  useEffect(() => {
+    const handleDeviceMotion = (event: DeviceMotionEvent) => {
+      const acc = event.accelerationIncludingGravity;
+      if (!acc) return;
+      const threshold = 18; // Shake strength threshold
+      if (acc.x && acc.y && (Math.abs(acc.x) > threshold || Math.abs(acc.y) > threshold)) {
+        // Trigger scatter impulse on all balls
+        setRenderBalls((prev) =>
+          prev.map((ball) => ({
+            ...ball,
+            vx: (Math.random() - 0.5) * 45,
+            vy: (Math.random() - 0.5) * 45,
+          }))
+        );
+      }
+    };
+
+    if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', handleDeviceMotion);
+    }
+    return () => {
+      if (window.DeviceMotionEvent) {
+        window.removeEventListener('devicemotion', handleDeviceMotion);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let animationId: number;
 
     const updatePhysics = () => {
-      mouseState.current.vx *= 0.85;
-      mouseState.current.vy *= 0.85;
+      interactionState.current.vx *= 0.85;
+      interactionState.current.vy *= 0.85;
 
       setRenderBalls((prev) =>
         prev.map((ball, idx) => {
           const origin = ballsData.current[idx];
           let { x, y, vx, vy } = ball;
 
-          const dx = mouseState.current.x - x;
-          const dy = mouseState.current.y - y;
-          const distToMouse = Math.sqrt(dx * dx + dy * dy);
+          const dx = interactionState.current.x - x;
+          const dy = interactionState.current.y - y;
+          const distToInteraction = Math.sqrt(dx * dx + dy * dy);
 
-          const hitRadius = 180;
+          const hitRadius = 160;
 
-          if (distToMouse < hitRadius) {
-            const speed = Math.sqrt(mouseState.current.vx ** 2 + mouseState.current.vy ** 2);
-            const impulse = Math.max(speed * 1.6, 14);
+          if (distToInteraction < hitRadius) {
+            const speed = Math.sqrt(interactionState.current.vx ** 2 + interactionState.current.vy ** 2);
+            const impulse = Math.max(speed * 1.6, 16);
 
-            const angle = Math.atan2(y - mouseState.current.y, x - mouseState.current.x);
+            const angle = Math.atan2(y - interactionState.current.y, x - interactionState.current.x);
             vx += Math.cos(angle) * impulse;
             vy += Math.sin(angle) * impulse;
           }
 
           const spring = 0.0055; 
-          const friction = 0.94;
+          const friction = 0.93;
 
           const returnVx = (origin.homeX - x) * spring;
           const returnVy = (origin.homeY - y) * spring;
@@ -348,8 +391,10 @@ function GlossyKineticCluster() {
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full h-[520px] overflow-visible"
-      style={{ marginLeft: '40px' }}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleMouseLeave}
+      className="relative w-full h-[460px] sm:h-[520px] overflow-visible flex items-center justify-center sm:justify-start"
+      style={{ marginLeft: window.innerWidth > 768 ? '40px' : '0px' }}
     >
       {renderBalls.map((ball) => (
         <div
@@ -630,7 +675,7 @@ export default function App() {
       stackStyle: { transform: cardPhase === 'hidden' ? 'translateX(-110vw) rotate(-20deg)' : cardPhase === 'stacked' ? 'translateX(0vw) translateY(30px) rotate(-4deg) scale(0.96)' : 'translateX(0) translateY(0) rotate(0deg) scale(1)', opacity: cardPhase === 'hidden' ? 0 : 1, zIndex: 3 }
     },
     {
-      title: "Video Edit Showreel CapCut",
+      title: "CapCut Video Edit Showreel",
       description: "A cinematic compilation of video edits, visual effects, and motion graphics crafted using professional post-production suites.",
       tech: ["CapCut", "After Effects", "DaVinci Resolve", "Motion Graphics"],
       liveUrl: "#",
@@ -778,18 +823,18 @@ export default function App() {
         </div>
       )}
       
-      {/* Background Character Video with Mouse Delta Scrubbing */}
+      {/* Background Character Video with Responsive Mobile Sizing */}
       <video
         ref={videoRef}
         src="/me.mp4"
-        className="fixed z-0 pointer-events-none object-cover video-blend"
+        className="fixed z-0 pointer-events-none object-cover video-blend md:block"
         style={{
-          width: '75vw',
-          height: '85vh',
-          right: '-5vw',
-          top: '10vh',
+          width: window.innerWidth < 768 ? '100vw' : '75vw',
+          height: window.innerWidth < 768 ? '50vh' : '85vh',
+          right: window.innerWidth < 768 ? '0' : '-5vw',
+          top: window.innerWidth < 768 ? '35vh' : '10vh',
           objectPosition: '70% center',
-          opacity: (activeNav === 'Journey' || activeNav === 'Work' || activeNav === 'Contact') ? 0.15 : 1,
+          opacity: (activeNav === 'Journey' || activeNav === 'Work' || activeNav === 'Contact') ? 0.15 : (window.innerWidth < 768 ? 0.4 : 1),
         }}
         muted
         playsInline
@@ -1156,7 +1201,7 @@ export default function App() {
                 </div>
                 <div>
                   <h3 className="text-[22px] font-medium text-white mb-1" style={{ fontFamily: 'var(--font-heading)' }}>GitHub</h3>
-                  <p className="text-white/70 text-[15px]">Explore my repositories, open-source code and contributions.</p>
+                  <p className="text-white/70 text-[15px]">Explore my repositories, open-source-code and contributions.</p>
                 </div>
               </a>
             </div>
@@ -1164,7 +1209,7 @@ export default function App() {
         </main>
       ) : activeNav === 'Languages' ? (
         <main className="relative z-[1] w-full h-screen pt-32 pb-16 px-5 sm:px-8 md:px-16 max-w-7xl mx-auto cinematic-text flex flex-col justify-center overflow-hidden">
-          <div className="mb-4" style={{ marginLeft: '45px', marginTop: '10px' }}>
+          <div className="mb-4" style={{ marginLeft: window.innerWidth > 768 ? '45px' : '0px', marginTop: '10px' }}>
             <h2 className="text-[34px] sm:text-[44px] font-medium text-white tracking-tight" style={{ fontFamily: 'var(--font-heading)' }}>
               My Learning
             </h2>
