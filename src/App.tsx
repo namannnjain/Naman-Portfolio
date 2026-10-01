@@ -508,8 +508,10 @@ export default function App() {
         setMobileUnlocked(true);
         setLoaderFadeOut(true);
         setTimeout(() => setIsLoading(false), 700);
-      }).catch((err) => {
-        console.log("Play error:", err);
+      }).catch(() => {
+        setMobileUnlocked(true);
+        setLoaderFadeOut(true);
+        setTimeout(() => setIsLoading(false), 700);
       });
     } else {
       setLoaderFadeOut(true);
@@ -890,13 +892,13 @@ export default function App() {
               <div className="h-full bg-white loader-bar" />
             </div>
 
-            {/* Mobile Only Unlock & Enter Button */}
+            {/* Mobile Only Bottom Center Experience Button */}
             <button
               onClick={handleEnterClick}
-              className="relative z-25 sm:hidden px-6 py-3 bg-white text-black font-medium rounded-full shadow-2xl text-[15px] border border-white/40 active:scale-95 transition-transform cursor-pointer"
+              className="relative z-25 sm:hidden px-7 py-3.5 bg-white text-black font-medium rounded-full shadow-2xl text-[15px] border border-white/40 active:scale-95 transition-transform cursor-pointer"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Click Here to Enter
+              Click Here for Best Experience
             </button>
           </div>
         </div>
